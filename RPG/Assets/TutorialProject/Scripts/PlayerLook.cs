@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerLook : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField] int mouseSensitivity;
+    [SerializeField] public int mouseSensitivity;
     [SerializeField] Transform playerCamera;
     float xRotation, yRotation;
     float mouseX,mouseY;
