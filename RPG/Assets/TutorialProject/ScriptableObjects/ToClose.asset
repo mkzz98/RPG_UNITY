@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebed999f94b22f64ba86d3c102d64517, type: 3}
-  m_Name: FirstNPC
+  m_Name: ToClose
   m_EditorClassIdentifier: 
   dialogueInfo:
-  - dialogue: Hello my name is Crow
-  - dialogue: Nice To meet you
+  - dialogue: Hey! Your to close!

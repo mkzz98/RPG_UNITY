@@ -7,13 +7,15 @@ using UnityEngine.InputSystem;
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance { get; private set; }
-    bool inDialogue;
+    public bool inDialogue;
     bool isTyping;
     private Queue<SO_Dialog.Info> dialogueQueue;
     private string completeText;
     [SerializeField] private float textDelay = 0.1f;
     [SerializeField] TMP_Text dialogueText;
+    [SerializeField] TMP_Text closeDialogueText;
     [SerializeField] GameObject dialogueBox;
+    [SerializeField] GameObject closeDialogueBox;
 
 
     public void Awake()
@@ -39,6 +41,7 @@ public class DialogueManager : MonoBehaviour
         {
             yield return new WaitForSeconds(textDelay);
             dialogueText.text += c;
+            closeDialogueText.text += c;
         }
         isTyping = false;
     }
@@ -54,6 +57,7 @@ public class DialogueManager : MonoBehaviour
     private void CompleteText()
     {
         dialogueText.text = completeText;
+        closeDialogueText.text = completeText;
     }
 
     public void QueueDialogue(SO_Dialog dialogue)
@@ -72,6 +76,23 @@ public class DialogueManager : MonoBehaviour
         }
         DequeueDialogue();
     }
+    public void ToCloseQueueDialogue(SO_Dialog closeDialogue)
+    {
+        if (inDialogue)
+        {
+            return;
+        }
+        GameObject.FindWithTag("Player").GetComponent<PlayerInput>().enabled = false;
+        inDialogue = true;
+        closeDialogueBox.SetActive(true);
+        dialogueQueue.Clear();
+        foreach (SO_Dialog.Info line in closeDialogue.dialogueInfo)
+        {
+            dialogueQueue.Enqueue(line);
+        }
+        DequeueDialogue();
+    }
+
 
     private void DequeueDialogue()
     {
@@ -90,12 +111,14 @@ public class DialogueManager : MonoBehaviour
         SO_Dialog.Info info = dialogueQueue.Dequeue();
         completeText = info.dialogue;
         dialogueText.text = "";
+        closeDialogueText.text = "";
         StartCoroutine(TypeText(info));
     }
 
     private void EndDialogue()
     {
         dialogueBox.SetActive(false);
+        closeDialogueBox.SetActive(false);
         inDialogue = false;
         GameObject.FindWithTag("Player").GetComponent<PlayerInput>().enabled = true;
     }
