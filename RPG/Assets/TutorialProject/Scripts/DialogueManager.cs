@@ -1,0 +1,105 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class DialogueManager : MonoBehaviour
+{
+    public static DialogueManager Instance { get; private set; }
+    bool inDialogue;
+    bool isTyping;
+    private Queue<SO_Dialog.Info> dialogueQueue;
+    private string completeText;
+    [SerializeField] private float textDelay = 0.1f;
+    [SerializeField] TMP_Text dialogueText;
+    [SerializeField] GameObject dialogueBox;
+
+
+    public void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+
+        dialogueQueue = new Queue<SO_Dialog.Info>();
+    }
+
+  
+
+    private IEnumerator TypeText(SO_Dialog.Info info)
+    {
+        isTyping = true;
+        foreach (char c in info.dialogue.ToCharArray())
+        {
+            yield return new WaitForSeconds(textDelay);
+            dialogueText.text += c;
+        }
+        isTyping = false;
+    }
+
+    private void OnInteract()
+    {
+        if (inDialogue)
+        {
+            DequeueDialogue();
+        }
+    }
+
+    private void CompleteText()
+    {
+        dialogueText.text = completeText;
+    }
+
+    public void QueueDialogue(SO_Dialog dialogue)
+    {
+        if (inDialogue)
+        {
+            return;
+        }
+        GameObject.FindWithTag("Player").GetComponent<PlayerInput>().enabled = false;
+        inDialogue = true;
+        dialogueBox.SetActive(true);
+        dialogueQueue.Clear();
+        foreach(SO_Dialog.Info line in dialogue.dialogueInfo)
+        {
+            dialogueQueue.Enqueue(line);
+        }
+        DequeueDialogue();
+    }
+
+    private void DequeueDialogue()
+    {
+        if (isTyping)
+        {
+            CompleteText();
+            StopAllCoroutines();
+            isTyping = false;
+            return;
+        }
+        if(dialogueQueue.Count == 0)
+        {
+            EndDialogue();
+            return;
+        }
+        SO_Dialog.Info info = dialogueQueue.Dequeue();
+        completeText = info.dialogue;
+        dialogueText.text = "";
+        StartCoroutine(TypeText(info));
+    }
+
+    private void EndDialogue()
+    {
+        dialogueBox.SetActive(false);
+        inDialogue = false;
+        GameObject.FindWithTag("Player").GetComponent<PlayerInput>().enabled = true;
+    }
+    
+
+    
+}
